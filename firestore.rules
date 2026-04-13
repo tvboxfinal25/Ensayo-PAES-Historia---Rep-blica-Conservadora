@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: results
+    // Fields:
+    //   - name: string (required)
+    //   - course: string (required)
+    //   - score: number (required)
+    //   - axisPerformance: map (optional)
+    //   - date: string (required)
+    //
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidResult(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.course is string && data.course.size() > 0 && data.course.size() < 50 &&
+             data.score is number && data.score >= 0 && data.score <= 30 &&
+             data.date is string;
+    }
+
+    match /results/{resultId} {
+      // Allow students to submit results without auth (for simplicity in this demo)
+      // In a production app, we would require auth.
+      allow create: if isValidResult(request.resource.data);
+      
+      // Only authenticated users (teachers) can see the results
+      allow read: if isAuthenticated();
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

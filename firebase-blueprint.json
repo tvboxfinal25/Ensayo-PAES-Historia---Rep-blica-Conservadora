@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "QuizResult": {
+      "title": "QuizResult",
+      "description": "Result of a student's quiz attempt",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Student's name"
+        },
+        "course": {
+          "type": "string",
+          "description": "Student's course"
+        },
+        "score": {
+          "type": "number",
+          "description": "Total score achieved"
+        },
+        "axisPerformance": {
+          "type": "object",
+          "description": "Performance breakdown by thematic axis"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date and time of the attempt"
+        }
+      },
+      "required": ["name", "course", "score", "date"]
+    }
+  },
+  "firestore": {
+    "/results/{resultId}": {
+      "schema": "QuizResult",
+      "description": "Collection of quiz results"
+    }
+  }
+}
