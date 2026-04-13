@@ -33,6 +33,8 @@ export default function App() {
   const [isAnswered, setIsAnswered] = useState(false);
   const [results, setResults] = useState<QuizResult[]>([]);
   const [userAnswers, setUserAnswers] = useState<boolean[]>([]);
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
+  const [startTime, setStartTime] = useState<number>(0);
   const [showImageFull, setShowImageFull] = useState(false);
 
   useEffect(() => {
@@ -56,6 +58,8 @@ export default function App() {
       setSelected(null);
       setIsAnswered(false);
       setUserAnswers([]);
+      setSelectedAnswers([]);
+      setStartTime(Date.now());
       setGameState('quiz');
     }
   };
@@ -64,11 +68,13 @@ export default function App() {
     if (selected === null) return;
     setIsAnswered(true);
     const question = quizSet[currentIdx];
-    const isCorrect = question.opciones[selected] === question.correcta;
+    const selectedText = question.opciones[selected];
+    const isCorrect = selectedText === question.correcta;
     if (isCorrect) {
       setScore(score + 1);
     }
     setUserAnswers([...userAnswers, isCorrect]);
+    setSelectedAnswers([...selectedAnswers, selectedText]);
   };
 
   const next = async () => {
@@ -90,12 +96,28 @@ export default function App() {
         }
       });
 
+      const endTime = Date.now();
+      const durationMs = endTime - startTime;
+      const minutes = Math.floor(durationMs / 60000);
+      const seconds = Math.floor((durationMs % 60000) / 1000);
+      const durationStr = `${minutes}m ${seconds}s`;
+
+      const details = quizSet.map((q, i) => ({
+        question: q.pregunta,
+        selected: selectedAnswers[i],
+        correct: q.correcta,
+        isCorrect: userAnswers[i],
+        eje: q.eje
+      }));
+
       const finalScore = score;
       const newResult: QuizResult = {
         ...student,
         score: finalScore,
         axisPerformance,
-        date: new Date().toLocaleString()
+        date: new Date().toLocaleString(),
+        duration: durationStr,
+        details
       };
       
       try {
@@ -148,8 +170,9 @@ export default function App() {
               student={student}
               score={score}
               totalQuestions={quizSet.length}
-              axisPerformance={results[0]?.axisPerformance || {}}
+              axisPerformance={results.find(r => r.name === student.name && r.date === results[0]?.date)?.axisPerformance || {}}
               onRestart={restart}
+              fullResult={results.find(r => r.name === student.name)}
             />
           )}
 

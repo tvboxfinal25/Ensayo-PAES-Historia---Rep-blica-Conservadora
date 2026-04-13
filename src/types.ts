@@ -20,4 +20,12 @@ export interface QuizResult extends Student {
   score: number;
   axisPerformance?: Record<string, { correct: number; total: number }>;
   date: string;
+  duration?: string;
+  details?: {
+    question: string;
+    selected: string;
+    correct: string;
+    isCorrect: boolean;
+    eje: string;
+  }[];
 }
